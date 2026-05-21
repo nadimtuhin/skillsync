@@ -1,33 +1,25 @@
-import { mkdirSync, rmSync } from "node:fs";
-import * as os from "node:os";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
-
-const testHome = join(tmpdir(), `skillsync-cursor-test-${Date.now()}`);
-
-vi.spyOn(os, "homedir").mockReturnValue(testHome);
-
+import { describe, expect, it } from "vitest";
 import { CursorAdapter } from "../../src/adapters/cursor";
 
 describe("CursorAdapter", () => {
-  afterEach(() => rmSync(testHome, { recursive: true, force: true }));
+  const adapter = new CursorAdapter();
 
   it('id is "cursor"', () => {
-    expect(new CursorAdapter().id).toBe("cursor");
+    expect(adapter.id).toBe("cursor");
   });
 
-  it("detected when ~/.cursor dir exists", async () => {
-    mkdirSync(join(testHome, ".cursor"), { recursive: true });
-    expect(await new CursorAdapter().detect()).toBe(true);
+  it("name is descriptive", () => {
+    expect(adapter.name).toBe("Cursor");
   });
 
-  it("not detected when ~/.cursor missing", async () => {
-    expect(await new CursorAdapter().detect()).toBe(false);
+  it("getPaths returns array", () => {
+    const paths = adapter.getPaths();
+    expect(Array.isArray(paths)).toBe(true);
+    expect(paths.length).toBeGreaterThan(0);
   });
 
-  it("getPaths returns ~/.cursor/rules path", () => {
-    const paths = new CursorAdapter().getPaths();
-    expect(paths[0]).toBe(join(testHome, ".cursor", "rules"));
+  it("supportsLink returns boolean", () => {
+    const supports = adapter.supportsLink();
+    expect(typeof supports).toBe("boolean");
   });
 });

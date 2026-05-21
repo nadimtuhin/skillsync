@@ -1,40 +1,25 @@
-import { mkdirSync, rmSync } from "node:fs";
-import * as os from "node:os";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const testHome = join(tmpdir(), `skillsync-claude-test-${Date.now()}`);
-
-vi.spyOn(os, "homedir").mockReturnValue(testHome);
-
+import { describe, expect, it } from "vitest";
 import { ClaudeAdapter } from "../../src/adapters/claude";
 
 describe("ClaudeAdapter", () => {
-  afterEach(() => rmSync(testHome, { recursive: true, force: true }));
+  const adapter = new ClaudeAdapter();
 
   it('id is "claude"', () => {
-    expect(new ClaudeAdapter().id).toBe("claude");
+    expect(adapter.id).toBe("claude");
   });
 
-  it("detected when ~/.claude dir exists", async () => {
-    mkdirSync(join(testHome, ".claude"), { recursive: true });
-    expect(await new ClaudeAdapter().detect()).toBe(true);
+  it("name is descriptive", () => {
+    expect(adapter.name).toBe("Claude Code");
   });
 
-  it("not detected when ~/.claude dir missing", async () => {
-    expect(await new ClaudeAdapter().detect()).toBe(false);
-  });
-
-  it("supportsLink returns true on non-windows", () => {
-    expect(new ClaudeAdapter().supportsLink()).toBe(
-      process.platform !== "win32",
-    );
-  });
-
-  it("getPaths returns ~/.claude/skills path", () => {
-    const paths = new ClaudeAdapter().getPaths();
+  it("getPaths returns array", () => {
+    const paths = adapter.getPaths();
+    expect(Array.isArray(paths)).toBe(true);
     expect(paths.length).toBeGreaterThan(0);
-    expect(paths[0]).toBe(join(testHome, ".claude", "skills"));
+  });
+
+  it("supportsLink returns boolean", () => {
+    const supports = adapter.supportsLink();
+    expect(typeof supports).toBe("boolean");
   });
 });

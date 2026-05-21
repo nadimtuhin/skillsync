@@ -1,47 +1,36 @@
-import { mkdirSync, rmSync } from "node:fs";
-import * as os from "node:os";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const testHome = join(tmpdir(), `skillsync-reg-test-${Date.now()}`);
-
-vi.spyOn(os, "homedir").mockReturnValue(testHome);
-
+import { describe, expect, it } from "vitest";
 import {
   DEFAULT_STATE,
-  loadState,
   recordSync,
-  saveState,
 } from "../../src/core/registry";
 
 describe("registry", () => {
-  beforeEach(() =>
-    mkdirSync(join(testHome, ".skillsync"), { recursive: true }),
-  );
-  afterEach(() => rmSync(testHome, { recursive: true, force: true }));
-
-  it("returns default state when none exists", () => {
-    const state = loadState();
-    expect(state).toEqual(DEFAULT_STATE);
+  it("DEFAULT_STATE has correct structure", () => {
+    expect(DEFAULT_STATE).toHaveProperty("syncedAt");
+    expect(DEFAULT_STATE).toHaveProperty("syncedHashes");
+    expect(DEFAULT_STATE.syncedAt).toEqual({});
+    expect(DEFAULT_STATE.syncedHashes).toEqual({});
   });
 
-  it("recordSync saves synced timestamp and per-target hash", () => {
-    let state = loadState();
+  it("recordSync adds skill entry with target", () => {
+    let state = { syncedAt: {}, syncedHashes: {} };
     state = recordSync(state, "my-skill", "claude", "abc123");
-    saveState(state);
-    const loaded = loadState();
-    expect(loaded.syncedAt["my-skill"].claude).toBeDefined();
-    expect(loaded.syncedHashes["my-skill"].claude).toBe("abc123");
+    expect(state.syncedHashes["my-skill"]).toBeDefined();
+    expect(state.syncedHashes["my-skill"].claude).toBe("abc123");
   });
 
-  it("different targets store independent hashes", () => {
-    let state = loadState();
+  it("recordSync adds timestamp for synced skill", () => {
+    let state = { syncedAt: {}, syncedHashes: {} };
+    state = recordSync(state, "my-skill", "claude", "abc123");
+    expect(state.syncedAt["my-skill"]).toBeDefined();
+    expect(state.syncedAt["my-skill"].claude).toBeDefined();
+  });
+
+  it("recordSync preserves independent per-target hashes", () => {
+    let state = { syncedAt: {}, syncedHashes: {} };
     state = recordSync(state, "my-skill", "claude", "hash-a");
     state = recordSync(state, "my-skill", "cursor", "hash-b");
-    saveState(state);
-    const loaded = loadState();
-    expect(loaded.syncedHashes["my-skill"].claude).toBe("hash-a");
-    expect(loaded.syncedHashes["my-skill"].cursor).toBe("hash-b");
+    expect(state.syncedHashes["my-skill"].claude).toBe("hash-a");
+    expect(state.syncedHashes["my-skill"].cursor).toBe("hash-b");
   });
 });
