@@ -1,8 +1,11 @@
 {
-  "name": "skillctl",
+  "name": "@nadimtuhin/skillctl",
   "version": "0.1.0",
   "license": "MIT",
   "description": "Sync AI agent skills across multiple tools from one canonical repo",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "skillctl": "./dist/cli.js"
   },
