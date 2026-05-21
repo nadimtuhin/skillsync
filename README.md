@@ -1,5 +1,8 @@
 # skillsync
 
+[![CI](https://github.com/nadimtuhin/skillsync/workflows/CI/badge.svg)](https://github.com/nadimtuhin/skillsync/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Sync AI agent skills across multiple tools from one canonical repository.
 
 Write your skills once, deploy them everywhere — Claude Code, Cursor, and more.
@@ -8,7 +11,7 @@ Write your skills once, deploy them everywhere — Claude Code, Cursor, and more
 
 ```bash
 # Clone and build
-git clone https://github.com/your-org/skillsync
+git clone https://github.com/nadimtuhin/skillsync
 cd skillsync
 bun install
 bun run build
@@ -22,6 +25,16 @@ Or run directly:
 ```bash
 bun run src/cli.ts <command>
 ```
+
+## Features
+
+- 🎯 **Central repository** — Single source of truth for all agent skills
+- 🔗 **Flexible sync** — Copy or symlink modes for different workflows
+- 🔒 **Idempotent** — Hash-based change detection, safe to run repeatedly
+- 🚀 **Zero config** — Auto-detects Claude Code, Cursor, and other tools
+- 📊 **Machine-readable** — All commands support `--json` output for scripting
+- 🔍 **Validation** — Built-in skill structure validation
+- 📋 **Dry-run mode** — Preview changes before syncing
 
 ## Quick Start
 
@@ -148,3 +161,19 @@ bun run lint      # Lint with Biome
 bun run format    # Format with Biome
 bun run build     # Build to dist/cli.js
 ```
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup guide
+- How to run tests
+- Code style guidelines
+- Pull request process
+
+## Code of Conduct
+
+This project adheres to the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
