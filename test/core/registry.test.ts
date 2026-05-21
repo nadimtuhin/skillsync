@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  DEFAULT_STATE,
-  recordSync,
-} from "../../src/core/registry";
+import { DEFAULT_STATE, recordSync } from "../../src/core/registry";
 
 describe("registry", () => {
   it("DEFAULT_STATE has correct structure", () => {
