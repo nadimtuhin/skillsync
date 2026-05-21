@@ -1,10 +1,12 @@
 import { mkdirSync, rmSync } from "node:fs";
+import * as os from "node:os";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const testHome = join(tmpdir(), `skillsync-claude-test-${Date.now()}`);
-process.env.HOME = testHome;
+
+vi.spyOn(os, "homedir").mockReturnValue(testHome);
 
 import { ClaudeAdapter } from "../../src/adapters/claude";
 

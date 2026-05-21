@@ -1,15 +1,15 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs";
+import * as os from "node:os";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-// test/core/config.test.ts
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Override home dir for tests
 const testHome = join(tmpdir(), `skillsync-test-${Date.now()}`);
-process.env.HOME = testHome;
+
+// Mock homedir before importing modules
+vi.spyOn(os, "homedir").mockReturnValue(testHome);
 
 import {
-  DEFAULT_CONFIG,
   getConfigPath,
   getRepoPath,
   loadConfig,
@@ -30,7 +30,12 @@ describe("config", () => {
   });
 
   it("saves and reloads config", () => {
-    const cfg = { ...DEFAULT_CONFIG, defaultMode: "link" as const };
+    const cfg = {
+      repoPath: join(testHome, ".skillsync", "skills"),
+      defaultMode: "link" as const,
+      targets: [],
+      ignorePatterns: [],
+    };
     saveConfig(cfg);
     const loaded = loadConfig();
     expect(loaded.defaultMode).toBe("link");

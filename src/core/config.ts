@@ -12,12 +12,14 @@ const ConfigSchema = z.object({
   ignorePatterns: z.array(z.string()),
 });
 
-export const DEFAULT_CONFIG: Config = {
-  repoPath: join(homedir(), ".skillsync", "skills"),
-  defaultMode: "copy",
-  targets: [],
-  ignorePatterns: [],
-};
+function getDefaultConfig(): Config {
+  return {
+    repoPath: join(getSkillsyncDir(), "skills"),
+    defaultMode: "copy",
+    targets: [],
+    ignorePatterns: [],
+  };
+}
 
 export function getSkillsyncDir(): string {
   return join(homedir(), ".skillsync");
@@ -37,7 +39,7 @@ export function getStatePath(): string {
 
 export function loadConfig(): Config {
   const path = getConfigPath();
-  if (!existsSync(path)) return { ...DEFAULT_CONFIG };
+  if (!existsSync(path)) return getDefaultConfig();
   const raw = JSON.parse(readFileSync(path, "utf-8"));
   return ConfigSchema.parse(raw);
 }
