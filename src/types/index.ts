@@ -1,21 +1,21 @@
 // src/types/index.ts
-export type SyncMode = 'copy' | 'link';
-export type SyncActionType = 'create' | 'update' | 'skip' | 'conflict';
+export type SyncMode = "copy" | "link";
+export type SyncActionType = "create" | "update" | "skip" | "conflict";
 
 export interface Skill {
-  id: string;           // normalized kebab-case folder name
-  name: string;         // display name
-  path: string;         // absolute path in central repo
-  source?: string;      // e.g. 'imported-from-claude'
+  id: string; // normalized kebab-case folder name
+  name: string; // display name
+  path: string; // absolute path in central repo
+  source?: string; // e.g. 'imported-from-claude'
   tags: string[];
-  hash: string;         // sha256 of all file contents
+  hash: string; // sha256 of all file contents
   lastSyncedAt: Record<string, string>; // targetId -> ISO date
 }
 
 export interface Target {
-  id: string;           // 'claude' | 'cursor' | 'codex'
+  id: string; // 'claude' | 'cursor' | 'codex'
   name: string;
-  paths: string[];      // resolved absolute paths to sync into
+  paths: string[]; // resolved absolute paths to sync into
   supportsLink: boolean;
   detected: boolean;
 }
@@ -42,7 +42,7 @@ export interface Config {
 }
 
 export interface State {
-  syncedAt: Record<string, Record<string, string>>;    // skillId -> targetId -> ISO date
+  syncedAt: Record<string, Record<string, string>>; // skillId -> targetId -> ISO date
   syncedHashes: Record<string, Record<string, string>>; // skillId -> targetId -> hash at last sync
 }
 

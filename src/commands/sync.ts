@@ -1,22 +1,22 @@
-import { Command } from 'commander';
-import { loadConfig } from '../core/config.js';
-import { scanSkills } from '../core/skill.js';
-import { loadState, saveState, recordSync } from '../core/registry.js';
-import { planSync, applyPlan } from '../core/sync.js';
-import { ALL_ADAPTERS } from '../adapters/index.js';
-import { print, setJsonMode, printJson, printError } from '../ui/output.js';
-import type { SyncMode, Target } from '../types/index.js';
+import type { Command } from "commander";
+import { ALL_ADAPTERS } from "../adapters/index.js";
+import { loadConfig } from "../core/config.js";
+import { loadState, recordSync, saveState } from "../core/registry.js";
+import { scanSkills } from "../core/skill.js";
+import { applyPlan, planSync } from "../core/sync.js";
+import type { SyncMode, Target } from "../types/index.js";
+import { print, printError, printJson, setJsonMode } from "../ui/output.js";
 
 export function registerSync(program: Command): void {
   program
-    .command('sync')
-    .description('Sync skills to agent tool directories')
-    .option('--all', 'Sync to all detected targets')
-    .option('--target <id>', 'Sync to a specific target')
-    .option('--mode <mode>', 'copy or link (default: from config)')
-    .option('--dry-run', 'Show plan without writing files')
-    .option('--force', 'Overwrite conflicts without prompting')
-    .option('--json', 'Machine-readable output')
+    .command("sync")
+    .description("Sync skills to agent tool directories")
+    .option("--all", "Sync to all detected targets")
+    .option("--target <id>", "Sync to a specific target")
+    .option("--mode <mode>", "copy or link (default: from config)")
+    .option("--dry-run", "Show plan without writing files")
+    .option("--force", "Overwrite conflicts without prompting")
+    .option("--json", "Machine-readable output")
     .action(async (opts) => {
       if (opts.json) setJsonMode(true);
 
@@ -42,7 +42,7 @@ export function registerSync(program: Command): void {
       }
 
       if (targets.length === 0) {
-        printError('No targets detected. Run `skillsync doctor` to diagnose.');
+        printError("No targets detected. Run `skillsync doctor` to diagnose.");
         process.exit(1);
       }
 
@@ -50,9 +50,9 @@ export function registerSync(program: Command): void {
       plan.dryRun = !!opts.dryRun;
 
       const summary = {
-        create: plan.actions.filter(a => a.type === 'create').length,
-        update: plan.actions.filter(a => a.type === 'update').length,
-        skip: plan.actions.filter(a => a.type === 'skip').length,
+        create: plan.actions.filter((a) => a.type === "create").length,
+        update: plan.actions.filter((a) => a.type === "update").length,
+        skip: plan.actions.filter((a) => a.type === "skip").length,
         dryRun: plan.dryRun,
       };
 
@@ -60,20 +60,33 @@ export function registerSync(program: Command): void {
         printJson({ summary, actions: plan.actions });
         if (plan.dryRun) return;
       } else {
-        print(`Plan: ${summary.create} create, ${summary.update} update, ${summary.skip} skip`);
-        if (plan.dryRun) { print('Dry run — no files written.'); return; }
+        print(
+          `Plan: ${summary.create} create, ${summary.update} update, ${summary.skip} skip`,
+        );
+        if (plan.dryRun) {
+          print("Dry run — no files written.");
+          return;
+        }
       }
 
       await applyPlan(plan, mode);
 
       let newState = state;
       for (const action of plan.actions) {
-        if (action.type === 'skip') continue;
-        const skill = skills.find(s => s.id === action.skillId);
-        if (skill) newState = recordSync(newState, skill.id, action.targetId, skill.hash);
+        if (action.type === "skip") continue;
+        const skill = skills.find((s) => s.id === action.skillId);
+        if (skill)
+          newState = recordSync(
+            newState,
+            skill.id,
+            action.targetId,
+            skill.hash,
+          );
       }
       saveState(newState);
 
-      print(`Done. Synced ${summary.create + summary.update} skill(s) in ${mode} mode.`);
+      print(
+        `Done. Synced ${summary.create + summary.update} skill(s) in ${mode} mode.`,
+      );
     });
 }

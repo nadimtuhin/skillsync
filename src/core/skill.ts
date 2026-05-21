@@ -1,14 +1,14 @@
-import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { basename, join } from 'node:path';
-import type { Skill } from '../types/index.js';
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { basename, join } from "node:path";
+import type { Skill } from "../types/index.js";
 
 export function skillIdFromPath(skillPath: string): string {
   return basename(skillPath);
 }
 
 export async function hashSkillDir(skillPath: string): Promise<string> {
-  const hash = createHash('sha256');
+  const hash = createHash("sha256");
   const entries = readdirSync(skillPath).sort();
   for (const entry of entries) {
     const entryPath = join(skillPath, entry);
@@ -18,7 +18,7 @@ export async function hashSkillDir(skillPath: string): Promise<string> {
       hash.update(readFileSync(entryPath));
     }
   }
-  return hash.digest('hex');
+  return hash.digest("hex");
 }
 
 export async function scanSkills(repoPath: string): Promise<Skill[]> {

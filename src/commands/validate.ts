@@ -1,24 +1,27 @@
-import { Command } from 'commander';
-import { loadConfig } from '../core/config.js';
-import { scanSkills } from '../core/skill.js';
-import { validateSkill } from '../core/validator.js';
-import { print, setJsonMode, printJson, exitErr } from '../ui/output.js';
+import type { Command } from "commander";
+import { loadConfig } from "../core/config.js";
+import { scanSkills } from "../core/skill.js";
+import { validateSkill } from "../core/validator.js";
+import { exitErr, print, printJson, setJsonMode } from "../ui/output.js";
 
 export function registerValidate(program: Command): void {
   program
-    .command('validate')
-    .description('Check all skills for structural issues')
-    .option('--json', 'Machine-readable output')
+    .command("validate")
+    .description("Check all skills for structural issues")
+    .option("--json", "Machine-readable output")
     .action(async (opts) => {
       if (opts.json) setJsonMode(true);
 
       const config = loadConfig();
       const skills = await scanSkills(config.repoPath);
-      const results = skills.map(s => ({ skill: s, result: validateSkill(s) }));
-      const invalid = results.filter(r => !r.result.valid);
+      const results = skills.map((s) => ({
+        skill: s,
+        result: validateSkill(s),
+      }));
+      const invalid = results.filter((r) => !r.result.valid);
 
       if (opts.json) {
-        printJson(results.map(r => ({ id: r.skill.id, ...r.result })));
+        printJson(results.map((r) => ({ id: r.skill.id, ...r.result })));
         return;
       }
 

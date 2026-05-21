@@ -9,15 +9,15 @@ export function isJsonMode(): boolean {
 }
 
 export function printJson(data: unknown): void {
-  process.stdout.write(JSON.stringify(data, null, 2) + '\n');
+  process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
 }
 
 export function print(message: string): void {
-  if (!jsonMode) process.stdout.write(message + '\n');
+  if (!jsonMode) process.stdout.write(`${message}\n`);
 }
 
 export function printError(message: string): void {
-  process.stderr.write(message + '\n');
+  process.stderr.write(`${message}\n`);
 }
 
 export function exitOk(): never {
