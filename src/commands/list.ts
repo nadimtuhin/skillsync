@@ -31,7 +31,7 @@ export function registerList(program: Command): void {
           { header: 'Hash (short)', key: 'hash', width: 12 },
           { header: 'Path', key: 'path' },
         ],
-        skills.map(s => ({ ...s, hash: s.hash.slice(0, 8) })),
+        skills.map(s => ({ id: s.id, hash: s.hash.slice(0, 8), path: s.path })),
       );
     });
 }
