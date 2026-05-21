@@ -1,0 +1,37 @@
+# Dev files
+test/
+src/
+fixtures/
+*.test.ts
+tsconfig.json
+biome.json
+bun.lock
+
+# Config files
+.claude/
+.kiro/
+.mcp.json
+.opencode.json
+.cursorrules
+.windsurfrules
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
+# CI
+.github/
+.omc/
+
+# Root dotfiles
+.DS_Store
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Docs (optional - remove if you want them in npm)
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+CODE_OF_CONDUCT.md
