@@ -1,6 +1,7 @@
 {
   "name": "skillsync",
   "version": "0.1.0",
+  "license": "MIT",
   "description": "Sync AI agent skills across multiple tools from one canonical repo",
   "bin": { "skillsync": "./dist/cli.js" },
   "repository": "https://github.com/nadimtuhin/skillsync",
