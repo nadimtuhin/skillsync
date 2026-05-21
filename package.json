@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "Sync AI agent skills across multiple tools from one canonical repo",
   "bin": { "skillsync": "./dist/cli.js" },
+  "repository": "https://github.com/nadimtuhin/skillsync",
+  "homepage": "https://github.com/nadimtuhin/skillsync",
   "scripts": {
     "start": "bun run src/cli.ts",
     "build": "bun build src/cli.ts --outfile dist/cli.js --target bun",
