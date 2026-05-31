@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { ALL_ADAPTERS } from "../adapters/index.js";
-import { print, printJson, setJsonMode } from "../ui/output.js";
+import { printJson, setJsonMode } from "../ui/output.js";
 import { printTable } from "../ui/table.js";
 
 export function registerTarget(program: Command): void {
