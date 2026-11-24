@@ -1,4 +1,11 @@
-import { cpSync, lstatSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
+import {
+  cpSync,
+  lstatSync,
+  mkdirSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 import type {
   Skill,
@@ -33,9 +40,19 @@ function destHash(path: string): string | undefined {
   try {
     return hashSkillDirSync(path);
   } catch {
-    // Unreadable/non-directory: a dangling link is safe to replace, anything
-    // else is treated as foreign content.
-    return isLink ? undefined : "";
+    // Only a dangling link (target doesn't exist) is safe to replace. A link
+    // to a file, an unreadable directory, etc. is foreign content.
+    return isLink && isDangling(path) ? undefined : "";
+  }
+}
+
+function isDangling(path: string): boolean {
+  try {
+    statSync(path);
+    return false;
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code;
+    return code === "ENOENT" || code === "ENOTDIR";
   }
 }
 

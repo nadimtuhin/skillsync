@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -160,5 +161,65 @@ describe("conflicting edits at the destination", () => {
     symlinkSync(skill.path, join(targetDir, "my-skill"));
     const plan = planSync([skill], [target()], {});
     expect(plan.actions[0].type).toBe("create");
+  });
+});
+
+describe("non-dangling symlinks whose target cannot be hashed", () => {
+  it("a link to a regular file is a conflict and is left in place", async () => {
+    writeSkill("my-skill", { "skill.md": "# mine" });
+    const userFile = join(tmp, "user-notes.md");
+    writeFileSync(userFile, "user content");
+    const dest = join(targetDir, "my-skill");
+    symlinkSync(userFile, dest);
+    const [skill] = await scanSkills(repo);
+    const plan = planSync([skill], [target()], {});
+    expect(plan.actions[0].type).toBe("conflict");
+    await applyPlan(plan, "copy");
+    expect(readlinkSync(dest)).toBe(userFile);
+    expect(readFileSync(userFile, "utf-8")).toBe("user content");
+  });
+
+  it("a link to a directory that fails to hash is a conflict", async () => {
+    writeSkill("my-skill", { "skill.md": "# mine" });
+    const userDir = join(tmp, "user-skill");
+    mkdirSync(userDir);
+    writeFileSync(join(userDir, "skill.md"), "user content");
+    // A broken entry inside makes hashing throw even though the link resolves.
+    symlinkSync(join(tmp, "gone"), join(userDir, "broken"));
+    const dest = join(targetDir, "my-skill");
+    symlinkSync(userDir, dest);
+    const [skill] = await scanSkills(repo);
+    const plan = planSync([skill], [target()], {});
+    expect(plan.actions[0].type).toBe("conflict");
+    await applyPlan(plan, "copy");
+    expect(readlinkSync(dest)).toBe(userDir);
+  });
+
+  // Permission bits are not enforced for root, so this can only run unprivileged.
+  it.skipIf(process.getuid?.() === 0)(
+    "a link to an unreadable directory is a conflict",
+    async () => {
+      writeSkill("my-skill", { "skill.md": "# mine" });
+      const userDir = join(tmp, "locked");
+      mkdirSync(userDir);
+      writeFileSync(join(userDir, "skill.md"), "user content");
+      chmodSync(userDir, 0o000);
+      const dest = join(targetDir, "my-skill");
+      symlinkSync(userDir, dest);
+      try {
+        const [skill] = await scanSkills(repo);
+        const plan = planSync([skill], [target()], {});
+        expect(plan.actions[0].type).toBe("conflict");
+      } finally {
+        chmodSync(userDir, 0o755);
+      }
+    },
+  );
+
+  it("a link through a missing parent directory is still dangling", async () => {
+    writeSkill("my-skill", { "skill.md": "# mine" });
+    symlinkSync(join(tmp, "nope", "deeper"), join(targetDir, "my-skill"));
+    const [skill] = await scanSkills(repo);
+    expect(planSync([skill], [target()], {}).actions[0].type).toBe("create");
   });
 });
