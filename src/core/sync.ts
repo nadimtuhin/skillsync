@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
+import { cpSync, lstatSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import type {
   Skill,
@@ -7,13 +7,43 @@ import type {
   SyncPlan,
   Target,
 } from "../types/index.js";
+import { hashSkillDirSync } from "./skill.js";
 
 type SyncedHashes = Record<string, Record<string, string>>; // skillId -> targetId -> hash
+
+// existsSync follows symlinks, so it reports a dangling link as missing.
+function pathExists(path: string): boolean {
+  try {
+    lstatSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Hash of what is currently at the destination, or undefined if there is
+// nothing worth preserving (missing path or dangling symlink).
+function destHash(path: string): string | undefined {
+  let isLink: boolean;
+  try {
+    isLink = lstatSync(path).isSymbolicLink();
+  } catch {
+    return undefined;
+  }
+  try {
+    return hashSkillDirSync(path);
+  } catch {
+    // Unreadable/non-directory: a dangling link is safe to replace, anything
+    // else is treated as foreign content.
+    return isLink ? undefined : "";
+  }
+}
 
 export function planSync(
   skills: Skill[],
   targets: Target[],
   syncedHashes: SyncedHashes,
+  options: { force?: boolean } = {},
 ): SyncPlan {
   const actions: SyncAction[] = [];
 
@@ -30,6 +60,19 @@ export function planSync(
           type = "skip";
         } else {
           type = "update";
+        }
+
+        // Don't clobber content we didn't write: a pre-existing skill on first
+        // sync, or local edits made at the destination since the last sync.
+        if (type !== "skip" && !options.force) {
+          const current = destHash(destPath);
+          if (
+            current !== undefined &&
+            current !== skill.hash &&
+            current !== prevHash
+          ) {
+            type = "conflict";
+          }
         }
 
         actions.push({
@@ -50,11 +93,11 @@ export async function applyPlan(plan: SyncPlan, mode: SyncMode): Promise<void> {
   if (plan.dryRun) return;
 
   for (const action of plan.actions) {
-    if (action.type === "skip") continue;
+    if (action.type === "skip" || action.type === "conflict") continue;
 
     mkdirSync(join(action.destPath, ".."), { recursive: true });
 
-    if (existsSync(action.destPath)) {
+    if (pathExists(action.destPath)) {
       rmSync(action.destPath, { recursive: true, force: true });
     }
 

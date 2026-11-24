@@ -46,13 +46,16 @@ export function registerSync(program: Command): void {
         process.exit(1);
       }
 
-      const plan = planSync(skills, targets, state.syncedHashes);
+      const plan = planSync(skills, targets, state.syncedHashes, {
+        force: !!opts.force,
+      });
       plan.dryRun = !!opts.dryRun;
 
       const summary = {
         create: plan.actions.filter((a) => a.type === "create").length,
         update: plan.actions.filter((a) => a.type === "update").length,
         skip: plan.actions.filter((a) => a.type === "skip").length,
+        conflict: plan.actions.filter((a) => a.type === "conflict").length,
         dryRun: plan.dryRun,
       };
 
@@ -61,8 +64,11 @@ export function registerSync(program: Command): void {
         if (plan.dryRun) return;
       } else {
         print(
-          `Plan: ${summary.create} create, ${summary.update} update, ${summary.skip} skip`,
+          `Plan: ${summary.create} create, ${summary.update} update, ${summary.skip} skip, ${summary.conflict} conflict`,
         );
+        for (const a of plan.actions.filter((a) => a.type === "conflict")) {
+          print(`Conflict: ${a.destPath} has changes not from skillsync`);
+        }
         if (plan.dryRun) {
           print("Dry run — no files written.");
           return;
@@ -73,7 +79,7 @@ export function registerSync(program: Command): void {
 
       let newState = state;
       for (const action of plan.actions) {
-        if (action.type === "skip") continue;
+        if (action.type === "skip" || action.type === "conflict") continue;
         const skill = skills.find((s) => s.id === action.skillId);
         if (skill)
           newState = recordSync(
@@ -88,5 +94,11 @@ export function registerSync(program: Command): void {
       print(
         `Done. Synced ${summary.create + summary.update} skill(s) in ${mode} mode.`,
       );
+      if (summary.conflict > 0) {
+        printError(
+          `${summary.conflict} conflict(s) left untouched. Re-run with --force to overwrite.`,
+        );
+        process.exitCode = 1;
+      }
     });
 }
